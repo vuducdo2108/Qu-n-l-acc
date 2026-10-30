@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-main: #0b0f19;
+  --bg-card: #131a2a;
+  --bg-card-hover: #182238;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --gold-glow: rgba(245, 158, 11, 0.25);
+  --cyan-glow: rgba(6, 182, 212, 0.25);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-main);
+  color: #e2e8f0;
+}
+
+.font-gaming {
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+::-webkit-scrollbar-thumb {
+  background: #24314c;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: rgba(19, 26, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(23, 32, 54, 0.9) 0%, rgba(15, 22, 38, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 158, 11, 0.15);
+}
+
+/* Rank Badge Styles */
+.rank-thachdau {
+  background: linear-gradient(135deg, #7c3aed, #ec4899, #ef4444);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.4);
+}
+.rank-chientuong {
+  background: linear-gradient(135deg, #dc2626, #f97316, #eab308);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.4);
+}
+.rank-caothu {
+  background: linear-gradient(135deg, #b91c1c, #e11d48);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(225, 29, 72, 0.35);
+}
+.rank-tinhanh {
+  background: linear-gradient(135deg, #059669, #10b981, #06b6d4);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+.rank-kimcuong {
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+.rank-bachkim {
+  background: linear-gradient(135deg, #94a3b8, #cbd5e1);
+  color: #0f172a;
+}
+.rank-vang {
+  background: linear-gradient(135deg, #d97706, #fbbf24);
+  color: #451a03;
+}
+.rank-bac {
+  background: linear-gradient(135deg, #64748b, #94a3b8);
+  color: #0f172a;
+}
+.rank-dong {
+  background: linear-gradient(135deg, #78350f, #b45309);
+  color: #fff;
+}
+
+/* Glowing text */
+.glow-gold {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+.glow-cyan {
+  text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+}
+
+/* Tag colors */
+.skin-tag {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.status-badge-available {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge-renting {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-badge-sold {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.status-badge-personal {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* Modal animation */
+.modal-enter {
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Pulse indicator */
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: inherit;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  70% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+

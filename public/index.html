@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Tài Khoản Liên Quân Mobile | AOV Account Master</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            aov: {
+              gold: '#F59E0B',
+              'gold-light': '#FCD34D',
+              dark: '#0B0F19',
+              card: '#131A2A',
+              border: '#1E293B',
+              cyan: '#06B6D4'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Chart.js for Dashboard Statistics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SweetAlert2 for notifications & prompts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-[#0B0F19] text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-black">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-[#0E1524]/90 backdrop-blur-md border-b border-white/10 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Branding -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-300 p-0.5 shadow-lg shadow-amber-500/20 flex items-center justify-center">
+            <div class="w-full h-full bg-[#0B0F19] rounded-[10px] flex items-center justify-center">
+              <i class="fa-solid fa-shield-halved text-amber-400 text-lg"></i>
+            </div>
+          </div>
+          <div>
+            <h1 class="font-gaming text-lg sm:text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-300 to-amber-200">
+              AOV ACC MASTER
+            </h1>
+            <p class="text-[11px] text-slate-400 hidden sm:block">Quản Lý Tài Khoản Liên Quân Mobile Chuyên Nghiệp</p>
+          </div>
+        </div>
+
+        <!-- Quick Summary Mini Badges -->
+        <div class="hidden md:flex items-center gap-2 text-xs">
+          <div class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+            <span class="text-slate-400">Còn bán:</span>
+            <span id="badge-available" class="font-bold text-emerald-400">0</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400 pulse-dot"></span>
+            <span class="text-slate-400">Đang thuê:</span>
+            <span id="badge-renting" class="font-bold text-amber-400">0</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+            <span class="text-slate-400">Đã bán:</span>
+            <span id="badge-sold" class="font-bold text-blue-400">0</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button onclick="openAddModal()" class="px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-md shadow-amber-500/25 flex items-center gap-2 transition-all transform active:scale-95">
+            <i class="fa-solid fa-plus"></i>
+            <span class="hidden sm:inline">Thêm Tài Khoản</span>
+            <span class="sm:hidden">Thêm</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex overflow-x-auto border-t border-white/5 space-x-1 sm:space-x-2 py-2 text-sm scrollbar-none">
+        <button onclick="switchTab('accounts')" id="tab-accounts" class="tab-btn px-4 py-2 rounded-lg font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 whitespace-nowrap transition-colors">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Danh Sách Tài Khoản</span>
+          <span id="count-all" class="px-1.5 py-0.5 rounded-full text-xs bg-amber-500/20 text-amber-300">0</span>
+        </button>
+
+        <button onclick="switchTab('rentals')" id="tab-rentals" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-colors">
+          <i class="fa-solid fa-stopwatch"></i>
+          <span>Theo Dõi Thuê Nick</span>
+          <span id="count-rentals" class="px-1.5 py-0.5 rounded-full text-xs bg-amber-500/20 text-amber-400">0</span>
+        </button>
+
+        <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-colors">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Thống Kê Doanh Thu</span>
+        </button>
+
+        <button onclick="switchTab('bulk')" id="tab-bulk" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-colors">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Nhập Nhanh Hàng Loạt</span>
+        </button>
+
+        <button onclick="switchTab('backup')" id="tab-backup" class="tab-btn px-4 py-2 rounded-lg font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-colors">
+          <i class="fa-solid fa-database"></i>
+          <span>Sao Lưu & Dữ Liệu</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================== TAB 1: ACCOUNTS LIST ==================== -->
+    <section id="view-accounts" class="space-y-6">
+      
+      <!-- Filter Bar -->
+      <div class="glass-panel p-4 sm:p-5 rounded-2xl space-y-4">
+        
+        <!-- Search & Quick Actions -->
+        <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+          
+          <!-- Search input -->
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              oninput="handleSearch()"
+              placeholder="Tìm theo tên ingame, ID, tài khoản, skin vip (VD: Nakroth Thứ Nguyên, Muay Thái)..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-sm placeholder:text-slate-500 focus:outline-none focus:border-amber-400 transition"
+            >
+          </div>
+
+          <!-- View Mode & Export -->
+          <div class="flex items-center gap-2">
+            <div class="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center">
+              <button onclick="setViewMode('card')" id="btn-view-card" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-grip"></i>
+                <span class="hidden sm:inline">Dạng Thẻ</span>
+              </button>
+              <button onclick="setViewMode('table')" id="btn-view-table" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-table-list"></i>
+                <span class="hidden sm:inline">Dạng Bảng</span>
+              </button>
+            </div>
+
+            <button onclick="exportToCSV()" title="Xuất file Excel / CSV" class="px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-file-excel text-emerald-400"></i>
+              <span class="hidden sm:inline">Xuất CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Selectors -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-2 border-t border-white/5 text-xs">
+          
+          <!-- Rank Filter -->
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Bậc Rank</label>
+            <select id="filter-rank" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-amber-400">
+              <option value="all">Tất cả Rank</option>
+              <option value="Thách Đấu">Thách Đấu</option>
+              <option value="Chiến Tướng">Chiến Tướng</option>
+              <option value="Cao Thủ">Cao Thủ</option>
+              <option value="Tinh Anh">Tinh Anh</option>
+              <option value="Kim Cương">Kim Cương</option>
+              <option value="Bạch Kim">Bạch Kim</option>
+              <option value="Vàng">Vàng</option>
+              <option value="Bạc">Bạc</option>
+              <option value="Đồng">Đồng</option>
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Trạng thái bán</label>
+            <select id="filter-status" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-amber-400">
+              <option value="all">Tất cả trạng thái</option>
+              <option value="Sẵn sàng bán">Sẵn sàng bán</option>
+              <option value="Đang cho thuê">Đang cho thuê</option>
+              <option value="Đã bán">Đã bán</option>
+              <option value="Tài khoản cá nhân">Tài khoản cá nhân</option>
+            </select>
+          </div>
+
+          <!-- Info Status Filter -->
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Tình trạng thông tin</label>
+            <select id="filter-info" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-amber-400">
+              <option value="all">Tất cả thông tin</option>
+              <option value="Trắng thông tin">Trắng thông tin</option>
+              <option value="Đổi được SĐT">Đổi được SĐT</option>
+              <option value="Garena có Email">Garena có Email</option>
+              <option value="Nick Facebook">Nick Facebook</option>
+            </select>
+          </div>
+
+          <!-- Price Filter -->
+          <div>
+            <label class="block text-slate-400 mb-1 font-medium">Mức giá</label>
+            <select id="filter-price" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-amber-400">
+              <option value="all">Tất cả mức giá</option>
+              <option value="0-200000">Dưới 200.000đ</option>
+              <option value="200000-500000">200k - 500.000đ</option>
+              <option value="500000-1000000">500k - 1.000.000đ</option>
+              <option value="1000000-999999999">Trên 1.000.000đ</option>
+            </select>
+          </div>
+
+          <!-- Sort Filter -->
+          <div class="col-span-2 sm:col-span-1">
+            <label class="block text-slate-400 mb-1 font-medium">Sắp xếp theo</label>
+            <select id="filter-sort" onchange="applyFilters()" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-amber-400">
+              <option value="newest">Mới cập nhật</option>
+              <option value="price_asc">Giá tăng dần</option>
+              <option value="price_desc">Giá giảm dần</option>
+              <option value="skins_desc">Nhiều Skin nhất</option>
+              <option value="heroes_desc">Nhiều Tướng nhất</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Filter tag reset bar -->
+        <div id="filter-reset-bar" class="hidden flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-white/5">
+          <div id="active-filter-tags" class="flex flex-wrap gap-1.5 items-center"></div>
+          <button onclick="resetAllFilters()" class="text-amber-400 hover:underline flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left"></i> Đặt lại tất cả
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Account List Container -->
+      <div id="accounts-container">
+        <!-- Rendered by JS -->
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 2: RENTALS TRACKER ==================== -->
+    <section id="view-rentals" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-2xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold font-gaming text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-stopwatch text-amber-500"></i> Quản Lý Tài Khoản Đang Cho Thuê
+            </h2>
+            <p class="text-xs text-slate-400">Theo dõi thời gian thuê nick theo thời gian thực và cảnh báo hết giờ tự động</p>
+          </div>
+          <div class="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm font-semibold flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 pulse-dot"></span>
+            Đang thuê: <span id="rental-active-count">0</span> tài khoản
+          </div>
+        </div>
+
+        <!-- Rentals Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-900/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-4">Tài khoản & In-game</th>
+                <th class="py-3 px-4">Người thuê & SĐT/Zalo</th>
+                <th class="py-3 px-4">Giá thuê</th>
+                <th class="py-3 px-4">Thời gian thuê</th>
+                <th class="py-3 px-4">Thời gian còn lại</th>
+                <th class="py-3 px-4 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="rentals-table-body" class="divide-y divide-slate-800">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="empty-rentals" class="hidden text-center py-12 text-slate-400">
+          <i class="fa-solid fa-gamepad text-4xl text-slate-600 mb-3"></i>
+          <p class="font-medium">Hiện tại không có tài khoản nào đang cho thuê.</p>
+          <p class="text-xs text-slate-500 mt-1">Bạn có thể chọn nút "Cho thuê" trên bất kỳ tài khoản nào ở danh sách để kích hoạt.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: STATISTICS & CHARTS ==================== -->
+    <section id="view-stats" class="hidden space-y-6">
+      
+      <!-- Top 4 Financial Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-blue-500">
+          <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
+            <span>TỔNG VỐN TỒN KHO</span>
+            <i class="fa-solid fa-boxes-stacked text-blue-400 text-base"></i>
+          </div>
+          <div id="stat-cost" class="text-2xl font-bold font-gaming text-slate-100">0đ</div>
+          <p class="text-[11px] text-slate-400 mt-1">Giá trị nhập của acc chưa bán</p>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-amber-500">
+          <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
+            <span>GIÁ TRỊ KHO DỰ KIẾN</span>
+            <i class="fa-solid fa-tags text-amber-400 text-base"></i>
+          </div>
+          <div id="stat-value" class="text-2xl font-bold font-gaming text-amber-400">0đ</div>
+          <p class="text-[11px] text-slate-400 mt-1">Tổng giá niêm yết đang bán</p>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-purple-500">
+          <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
+            <span>TỔNG DOANH THU ĐÃ BÁN</span>
+            <i class="fa-solid fa-hand-holding-dollar text-purple-400 text-base"></i>
+          </div>
+          <div id="stat-revenue" class="text-2xl font-bold font-gaming text-purple-300">0đ</div>
+          <p class="text-[11px] text-slate-400 mt-1">Số tiền thực tế đã thu về</p>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500">
+          <div class="flex items-center justify-between text-slate-400 text-xs mb-2">
+            <span>LỢI NHUẬN RÒNG</span>
+            <i class="fa-solid fa-sack-dollar text-emerald-400 text-base"></i>
+          </div>
+          <div id="stat-profit" class="text-2xl font-bold font-gaming text-emerald-400">0đ</div>
+          <p class="text-[11px] text-slate-400 mt-1">Doanh thu bán trừ tiền vốn</p>
+        </div>
+
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Rank Chart -->
+        <div class="glass-panel p-6 rounded-2xl">
+          <h3 class="text-base font-bold text-slate-200 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-column text-amber-400"></i> Phân Bố Bậc Rank Liên Quân
+          </h3>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-ranks"></canvas>
+          </div>
+        </div>
+
+        <!-- Info & Status Breakdown Chart -->
+        <div class="glass-panel p-6 rounded-2xl">
+          <h3 class="text-base font-bold text-slate-200 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-pie-chart text-cyan-400"></i> Phân Loại Thông Tin Tài Khoản
+          </h3>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-info"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 4: BULK IMPORT ==================== -->
+    <section id="view-bulk" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-2xl max-w-4xl mx-auto">
+        <div class="mb-4">
+          <h2 class="text-xl font-bold font-gaming text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-bolt text-amber-400"></i> Nhập Hàng Loạt Tài Khoản (Bulk Paste)
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Dán danh sách tài khoản theo định dạng: <code class="px-2 py-0.5 rounded bg-slate-800 text-amber-300">TàiKhoản|MậtKhẩu|BậcRank|GiáBán|TênInGame|SkinNổiBật</code>
+          </p>
+        </div>
+
+        <!-- Format Guide -->
+        <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 space-y-2 mb-4">
+          <div class="font-bold text-amber-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info"></i> Ví dụ định dạng mẫu (mỗi nick 1 dòng, ngăn cách bằng dấu gạch đứng `|`):
+          </div>
+          <pre class="bg-black/50 p-3 rounded-lg text-slate-300 font-mono text-[11px] overflow-x-auto">
+acc_lienquan01|Matkhau@123|Cao Thủ|350000|SátThủRừng|Nakroth Thứ Nguyên, Raz Muay Thái
+acc_lienquan02|Password456!|Tinh Anh|200000|XạThủGánhTeam|Valhein Khiêu Chiến
+acc_lienquan03|GarenaPass789|Kim Cương|120000|TrùmMid|Tulen Chí Tôn Kiếm Tiên</pre>
+          <p class="text-slate-400 text-[11px]">
+            * Chỉ cần tối thiểu 2 trường: <b>TàiKhoản|MậtKhẩu</b> (các trường còn lại sẽ tự động điền giá trị mặc định).
+          </p>
+        </div>
+
+        <!-- Inputs Form -->
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Trạng thái thông tin mặc định</label>
+              <select id="bulk-info-status" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs">
+                <option value="Trắng thông tin">Trắng thông tin 100%</option>
+                <option value="Đổi được SĐT">Đổi được SĐT</option>
+                <option value="Garena có Email">Garena có Email</option>
+                <option value="Nick Facebook">Nick Facebook</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Trạng thái bán mặc định</label>
+              <select id="bulk-acc-status" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs">
+                <option value="Sẵn sàng bán">Sẵn sàng bán</option>
+                <option value="Tài khoản cá nhân">Tài khoản cá nhân</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nội dung danh sách tài khoản</label>
+            <textarea 
+              id="bulk-text" 
+              rows="10" 
+              placeholder="Dán danh sách nick vào đây..." 
+              class="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 font-mono text-xs focus:outline-none focus:border-amber-400 transition"
+            ></textarea>
+          </div>
+
+          <div class="flex justify-end gap-3">
+            <button onclick="document.getElementById('bulk-text').value = ''" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+              Xóa trắng
+            </button>
+            <button onclick="submitBulkImport()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 flex items-center gap-2">
+              <i class="fa-solid fa-file-import"></i> Bắt Đầu Nhập
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: BACKUP & RESTORE ==================== -->
+    <section id="view-backup" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        
+        <!-- Export Box -->
+        <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl mb-4">
+              <i class="fa-solid fa-download"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 mb-2">Xuất Dữ Liệu Sao Lưu</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-6">
+              Tải toàn bộ danh sách tài khoản, lịch sử giá và trạng thái thành file JSON sao lưu an toàn. Dễ dàng chuyển sang máy tính khác hoặc lưu trữ đề phòng rủi ro.
+            </p>
+          </div>
+          <button onclick="downloadBackup()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-cloud-arrow-down"></i> Tải Về File Sao Lưu (.JSON)
+          </button>
+        </div>
+
+        <!-- Restore Box -->
+        <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-4">
+              <i class="fa-solid fa-upload"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-100 mb-2">Khôi Phục Dữ Liệu</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-6">
+              Chọn tệp tin JSON đã sao lưu trước đó để khôi phục toàn bộ kho tài khoản. Lưu ý: Thao tác này sẽ ghi đè lên kho dữ liệu hiện tại.
+            </p>
+          </div>
+          <div>
+            <input type="file" id="restore-file-input" accept=".json" class="hidden" onchange="handleFileRestore(event)">
+            <button onclick="document.getElementById('restore-file-input').click()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 font-bold text-sm flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-folder-open"></i> Chọn File Khôi Phục
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. Add / Edit Account Modal -->
+  <div id="modal-account" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="glass-panel bg-[#121828] border border-slate-700 w-full max-w-3xl rounded-2xl shadow-2xl modal-enter my-auto max-h-[92vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-700/80 flex items-center justify-between">
+        <h3 id="modal-account-title" class="text-lg font-bold font-gaming text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-shield"></i> Thêm Tài Khoản Mới
+        </h3>
+        <button onclick="closeAccountModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <form id="form-account" onsubmit="handleAccountFormSubmit(event)" class="p-6 overflow-y-auto space-y-5 text-xs flex-1">
+        <input type="hidden" id="acc-form-id">
+
+        <!-- Group 1: Thông tin đăng nhập -->
+        <div>
+          <h4 class="text-amber-400 font-bold uppercase tracking-wider text-[11px] mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-key"></i> 1. Thông Tin Đăng Nhập & Bảo Mật
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Loại đăng nhập</label>
+              <select id="acc-loginType" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+                <option value="Garena">Garena</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Apple ID">Apple ID</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Tên đăng nhập / Email <span class="text-red-400">*</span></label>
+              <input type="text" id="acc-username" required placeholder="VD: garena_account_vip" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 focus:outline-none focus:border-amber-400">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Mật khẩu <span class="text-red-400">*</span></label>
+              <input type="text" id="acc-password" required placeholder="VD: MatKhau123@" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 focus:outline-none focus:border-amber-400">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Mã 2FA / Mã dự phòng / Email xác thực</label>
+              <input type="text" id="acc-authCode" placeholder="VD: 123456 hoặc backup-code" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Tình trạng thông tin bảo mật</label>
+              <select id="acc-infoStatus" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+                <option value="Trắng thông tin">Trắng thông tin (Trắng 100%)</option>
+                <option value="Đổi được SĐT">Đổi được SĐT</option>
+                <option value="Garena có Email">Garena có Email xác thực</option>
+                <option value="Nick Facebook">Nick Facebook</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group 2: Chỉ số In-Game -->
+        <div class="pt-3 border-t border-slate-800">
+          <h4 class="text-amber-400 font-bold uppercase tracking-wider text-[11px] mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-gamepad"></i> 2. Thông Số In-Game Liên Quân
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Tên In-game</label>
+              <input type="text" id="acc-ingameName" placeholder="VD: SátThủBóngĐêm" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Bậc Rank</label>
+              <select id="acc-rank" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+                <option value="Thách Đấu">Thách Đấu</option>
+                <option value="Chiến Tướng">Chiến Tướng</option>
+                <option value="Cao Thủ">Cao Thủ</option>
+                <option value="Tinh Anh" selected>Tinh Anh</option>
+                <option value="Kim Cương">Kim Cương</option>
+                <option value="Bạch Kim">Bạch Kim</option>
+                <option value="Vàng">Vàng</option>
+                <option value="Bạc">Bạc</option>
+                <option value="Đồng">Đồng</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Số Sao / Điểm</label>
+              <input type="number" id="acc-stars" min="0" max="999" value="0" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Rank cao nhất từng đạt</label>
+              <input type="text" id="acc-maxRank" placeholder="VD: Chiến Tướng 50*" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Số lượng Tướng</label>
+              <input type="number" id="acc-heroCount" min="0" max="130" value="80" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Số Trang Phục (Skin)</label>
+              <input type="number" id="acc-skinCount" min="0" max="1000" value="120" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Tỷ lệ thắng (%)</label>
+              <input type="number" step="0.1" id="acc-winRate" min="0" max="100" value="55.0" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Bảng Ngọc</label>
+              <input type="text" id="acc-gemPages" placeholder="VD: Full 30 bảng 90" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+          </div>
+
+          <!-- Featured skins tags -->
+          <div class="mt-3">
+            <label class="block text-slate-300 mb-1 font-medium">Các Trang Phục Quý / Nổi Bật (ngăn cách bằng dấu phẩy)</label>
+            <input type="text" id="acc-featuredSkins" placeholder="VD: Nakroth Thứ Nguyên Vệ Thần, Raz Muay Thái, Tulen Chí Tôn Kiếm Tiên" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            <p class="text-[10px] text-slate-500 mt-1">Các skin hot như SSS, Thứ Nguyên, Anime Collab sẽ giúp tìm kiếm và định giá tài khoản tốt hơn.</p>
+          </div>
+        </div>
+
+        <!-- Group 3: Giá & Trạng thái kinh doanh -->
+        <div class="pt-3 border-t border-slate-800">
+          <h4 class="text-amber-400 font-bold uppercase tracking-wider text-[11px] mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-coins"></i> 3. Giá & Trạng Thái Kinh Doanh
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Giá vốn nhập (VNĐ)</label>
+              <input type="number" id="acc-costPrice" min="0" step="1000" placeholder="0" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Giá niêm yết bán (VNĐ)</label>
+              <input type="number" id="acc-salePrice" min="0" step="1000" placeholder="0" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Trạng thái tài khoản</label>
+              <select id="acc-status" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+                <option value="Sẵn sàng bán">Sẵn sàng bán</option>
+                <option value="Đang cho thuê">Đang cho thuê</option>
+                <option value="Đã bán">Đã bán</option>
+                <option value="Tài khoản cá nhân">Tài khoản cá nhân</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group 4: Hình ảnh & Ghi chú -->
+        <div class="pt-3 border-t border-slate-800">
+          <h4 class="text-amber-400 font-bold uppercase tracking-wider text-[11px] mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-images"></i> 4. Ảnh Chụp Màn Hình & Ghi Chú
+          </h4>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Tải ảnh lên từ máy tính</label>
+              <input type="file" id="acc-file-upload" accept="image/*" multiple onchange="handleModalImageUpload(event)" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer">
+            </div>
+            <div>
+              <label class="block text-slate-300 mb-1 font-medium">Hoặc Dán link ảnh online (URL)</label>
+              <div class="flex gap-2">
+                <input type="text" id="acc-imageUrl-input" placeholder="https://..." class="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+                <button type="button" onclick="addImageUrlFromInput()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold">Thêm</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Uploaded images preview list -->
+          <div id="modal-images-preview" class="flex flex-wrap gap-2 min-h-[50px] p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+            <span class="text-slate-500 text-[11px] self-center">Chưa có ảnh nào được thêm.</span>
+          </div>
+
+          <div class="mt-3">
+            <label class="block text-slate-300 mb-1 font-medium">Ghi chú thêm</label>
+            <textarea id="acc-notes" rows="2" placeholder="Ghi chú về nguồn nhập, lưu ý riêng về nick..." class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700"></textarea>
+          </div>
+        </div>
+
+        <!-- Form Submit Bar -->
+        <div class="pt-4 border-t border-slate-700 flex justify-end gap-3">
+          <button type="button" onclick="closeAccountModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">
+            Hủy Bỏ
+          </button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-bold shadow-lg shadow-amber-500/25 flex items-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu Tài Khoản
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Quick Mark As Sold Modal -->
+  <div id="modal-sell" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-[#121828] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 modal-enter">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold font-gaming text-emerald-400 flex items-center gap-2">
+          <i class="fa-solid fa-check-circle"></i> Đánh Dấu Đã Bán
+        </h3>
+        <button onclick="closeSellModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <input type="hidden" id="sell-acc-id">
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+          <p class="text-slate-400">Tài khoản: <span id="sell-acc-display" class="font-bold text-slate-200"></span></p>
+          <p class="text-slate-400">Giá niêm yết: <span id="sell-acc-listed" class="font-bold text-amber-400"></span></p>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-medium">Giá bán thực tế (VNĐ)</label>
+          <input type="number" id="sell-price" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-emerald-400 font-bold text-sm">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-medium">Ghi chú người mua / Kênh bán</label>
+          <input type="text" id="sell-buyerNote" placeholder="VD: Khách qua Zalo, nhận tiền MOMO..." class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="closeSellModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Hủy</button>
+          <button onclick="confirmSell()" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-600/25">
+            <i class="fa-solid fa-check"></i> Xác Nhận Bán
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Start Rental Modal -->
+  <div id="modal-rent" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-[#121828] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 modal-enter">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold font-gaming text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-stopwatch"></i> Cho Thuê Tài Khoản
+        </h3>
+        <button onclick="closeRentModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <input type="hidden" id="rent-acc-id">
+        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+          <p class="text-slate-400">Tài khoản: <span id="rent-acc-display" class="font-bold text-slate-200"></span></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1 font-medium">Tên người thuê</label>
+            <input type="text" id="rent-renterName" placeholder="VD: Anh Minh" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1 font-medium">SĐT / Zalo / Facebook</label>
+            <input type="text" id="rent-renterContact" placeholder="VD: 0912345678" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1 font-medium">Thời gian thuê (Giờ)</label>
+            <input type="number" id="rent-duration" value="3" min="1" max="720" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1 font-medium">Tiền thuê (VNĐ)</label>
+            <input type="number" id="rent-price" value="20000" step="5000" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1 font-medium">Ghi chú cọc / bảo đảm</label>
+          <input type="text" id="rent-notes" placeholder="VD: Cọc CCCD, leo rank 2 sao..." class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="closeRentModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Hủy</button>
+          <button onclick="confirmRent()" class="px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center gap-1.5 shadow-lg shadow-amber-500/25">
+            <i class="fa-solid fa-play"></i> Bắt Đầu Cho Thuê
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Delivery Bill / Handover Modal -->
+  <div id="modal-bill" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-panel bg-[#121828] border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl p-6 modal-enter">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-700 pb-3">
+        <h3 class="text-lg font-bold font-gaming text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-receipt"></i> Mẫu Bàn Giao Tài Khoản Cho Khách
+        </h3>
+        <button onclick="closeBillModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <p class="text-slate-400">Bạn có thể sao chép đoạn văn bản chuẩn dưới đây để gửi trực tiếp cho khách mua qua Messenger / Zalo:</p>
+        
+        <textarea id="bill-text-content" rows="11" readonly class="w-full p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-amber-300/90 leading-relaxed focus:outline-none"></textarea>
+
+        <div class="flex justify-between items-center pt-2">
+          <span class="text-[11px] text-emerald-400 flex items-center gap-1">
+            <i class="fa-solid fa-shield-check"></i> Đầy đủ thông tin đăng nhập và lưu ý bảo mật
+          </span>
+          <button onclick="copyBillText()" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center gap-2">
+            <i class="fa-solid fa-copy"></i> Sao Chép Toàn Bộ Bill
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Image Lightbox Modal -->
+  <div id="modal-lightbox" class="fixed inset-0 z-50 bg-black/95 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Screenshot" class="max-w-full max-h-[90vh] rounded-lg object-contain shadow-2xl">
+    <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white text-2xl p-2">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 bg-[#080B12] py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>© 2026 AOV Acc Master - Phần mềm quản lý tài khoản game Liên Quân Mobile</p>
+      <div class="flex items-center gap-4 text-slate-400">
+        <span>Bảo mật dữ liệu cục bộ</span>
+        <span>•</span>
+        <span>Hỗ trợ Export/Import</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App JavaScript -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
+
